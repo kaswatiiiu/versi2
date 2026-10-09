@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ Spesial Ulang Tahun Teh Halimah ✨</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Plus+Jakarta+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <!-- Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    
+    <!-- Firebase SDK untuk Buku Tamu Online -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, onSnapshot, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        // === GANTI DENGAN FIREBASE CONFIG KAMU (Jika pakai database) ===
+        const firebaseConfig = {
+            apiKey: "GANTI_DENGAN_API_KEY_KAMU",
+            authDomain: "GANTI_DENGAN_AUTH_DOMAIN_KAMU",
+            projectId: "GANTI_DENGAN_PROJECT_ID_KAMU",
+            storageBucket: "GANTI_DENGAN_STORAGE_BUCKET_KAMU",
+            messagingSenderId: "GANTI_DENGAN_MESSAGING_SENDER_ID_KAMU",
+            appId: "GANTI_DENGAN_APP_ID_KAMU"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        window.tambahUcapanDb = async function() {
+            const nama = document.getElementById('namaPengirim').value.trim();
+            const pesan = document.getElementById('pesanPengirim').value.trim();
+
+            if (nama === '' || pesan === '') {
+                alert('Mohon isi nama dan pesan dulu ya, Kak!');
+                return;
+            }
+
+            try {
+                await addDoc(collection(db, "ucapan_halimah"), {
+                    nama: nama,
+                    pesan: pesan,
+                    waktu: serverTimestamp()
+                });
+
+                document.getElementById('namaPengirim').value = '';
+                document.getElementById('pesanPengirim').value = '';
+                
+                confetti({
+                    particleCount: 80,
+                    spread: 90,
+                    origin: { y: 0.8 },
+                    colors: ['#3b82f6', '#50e3c2', '#ffffff', '#b3e5fc', '#8ab4f8']
+                });
+            } catch (e) {
+                console.error("Gagal mengirim:", e);
+                alert("Gagal mengirim pesan, pastikan konfigurasi Firebase sudah benar.");
+            }
+        };
+
+        function muatUcapan() {
+            const daftar = document.getElementById('daftarUcapan');
+            const q = query(collection(db, "ucapan_halimah"));
+            
+            onSnapshot(q, (snapshot) => {
+                daftar.innerHTML = ""; 
+                if (snapshot.empty) {
+                    daftar.innerHTML = '<div class="wish-card">Belum ada ucapan nih. Jadilah yang pertama mengirim doa! 🌌</div>';
+                    return;
+                }
+                
+                snapshot.forEach((doc) => {
+                    const data = doc.data();
+                    const card = document.createElement('div');
+                    card.className = 'wish-card';
+                    card.innerHTML = `<strong>${escapeHtml(data.nama)}</strong><p>${escapeHtml(data.pesan)}</p>`;
+                    daftar.appendChild(card);
+                });
+            });
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        window.addEventListener('DOMContentLoaded', muatUcapan);
+    </script>
+
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --secondary: #60a5fa;
+            --accent: #1d4ed8;
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #312e81 100%);
+            --card-bg: rgba(30, 41, 59, 0.85);
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 20px;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* --- ANIMASI BINTANG DI BACKGROUND --- */
+        .star {
+            position: fixed;
+            background: #ffffff;
+            border-radius: 50%;
+            animation: twinkle linear infinite;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        @keyframes twinkle {
+            0% { opacity: 0.2; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.2; transform: scale(0.8); }
+        }
+
+        /* --- LAYAR AMPLOP UTAMA (SPLASH SCREEN) --- */
+        #envelopeScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            transition: opacity 0.8s ease, visibility 0.8s ease;
+        }
+
+        .envelope {
+            background: #1e293b;
+            width: 320px;
+            height: 210px;
+            border-radius: 16px;
+            box-shadow: 0 15px 35px rgba(59, 130, 246, 0.25);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid #3b82f6;
+            position: relative;
+            transition: transform 0.4s ease;
+        }
+
+        .envelope:hover {
+            transform: scale(1.03);
+        }
+
+        .envelope h3 {
+            font-family: 'Playfair Display', serif;
+            color: #93c5fd;
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .envelope p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .stamp {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #1d4ed8;
+            color: #93c5fd;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 20px;
+            border: 1px dashed #60a5fa;
+        }
+
+        /* --- KONTEN UTAMA WEBSITE --- */
+        .main-wrapper {
+            width: 100%;
+            max-width: 600px;
+            z-index: 2;
+            display: none;
+            flex-direction: column;
+            gap: 30px;
+            animation: fadeInContent 1s ease forwards;
+        }
+
+        @keyframes fadeInContent {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .container {
+            background: var(--card-bg);
+            backdrop-filter: blur(14px);
+            padding: 45px 35px;
+            border-radius: 28px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            font-family: 'Playfair Display', serif;
+            color: #93c5fd;
+            margin-bottom: 12px;
+            font-size: 32px;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-family: 'Playfair Display', serif;
+            color: #93c5fd;
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        p {
+            font-size: 15px;
+            line-height: 1.7;
+            margin-bottom: 22px;
+            color: var(--text-muted);
+        }
+
+        .sender-badge {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.15);
+            color: #93c5fd;
+            border: 1px solid #3b82f6;
+            padding: 6px 18px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            border: none;
+            padding: 13px 32px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.6);
+            filter: brightness(1.1);
+        }
+
+        /* --- MINI GAME: CATCH THE STARS --- */
+        .game-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #3b82f6;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+            position: relative;
+        }
+
+        .game-stats {
+            display: flex;
+            justify-content: space-around;
+            font-weight: 600;
+            font-size: 14px;
+            color: #93c5fd;
+            margin-bottom: 15px;
+        }
+
+        .game-arena {
+            width: 100%;
+            height: 180px;
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px dashed var(--border-color);
+            border-radius: 14px;
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 15px;
+            cursor: crosshair;
+        }
+
+        .target-item {
+            position: absolute;
+            font-size: 28px;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.1s;
+            animation: popUp 0.4s ease;
+        }
+
+        @keyframes popUp {
+            0% { transform: scale(0); }
+            80% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- KUE & MAKE A WISH --- */
+        .cake-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .cake-graphic {
+            font-size: 64px;
+            margin-bottom: 15px;
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .cake-graphic:hover {
+            transform: scale(1.05);
+        }
+
+        .flame {
+            display: inline-block;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+
+        .flame.extinguished {
+            opacity: 0;
+            transform: scale(0);
+        }
+
+        .wish-result {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: #93c5fd;
+            font-size: 15px;
+            margin-top: 12px;
+            min-height: 24px;
+        }
+
+        /* --- KADO MISTERI --- */
+        .gift-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed #3b82f6;
+            border-radius: 18px;
+            padding: 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .gift-box:hover {
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .gift-content {
+            display: none;
+            margin-top: 15px;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: #93c5fd;
+            font-size: 16px;
+            animation: fadeInContent 0.5s ease forwards;
+        }
+
+        /* --- SERTIFIKAT PENGHARGAAN PABRIK --- */
+        .cert-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px dashed #3b82f6;
+            border-radius: 20px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .cert-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 18px;
+            color: #93c5fd;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .cert-subtitle {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+        }
+
+        .cert-badge-text {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: #60a5fa;
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 18px;
+            padding: 10px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 10px;
+        }
+
+        /* --- VIBE METER --- */
+        .vibe-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 25px;
+            text-align: center;
+        }
+
+        .vibe-display {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: #93c5fd;
+            font-size: 16px;
+            margin-bottom: 18px;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- GALAXY CLOSING CARD (PENUTUP TATA SURYA) --- */
+        .galaxy-closing {
+            background: linear-gradient(135deg, rgba(30, 41, 59, 0.9), rgba(15, 23, 42, 0.95));
+            border: 2px solid #3b82f6;
+            border-radius: 24px;
+            padding: 35px 25px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+        }
+
+        .orbit-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+            animation: floatOrbit 4s ease-in-out infinite;
+        }
+
+        @keyframes floatOrbit {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-8px) rotate(5deg); }
+        }
+
+        .closing-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 20px;
+            color: #93c5fd;
+            margin-bottom: 12px;
+            font-weight: 700;
+        }
+
+        .closing-text {
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: #e2e8f0;
+            font-size: 15px;
+            line-height: 1.8;
+            margin-bottom: 0;
+        }
+
+        /* --- KALENDER ESTETIK --- */
+        .calendar-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 25px;
+        }
+
+        .calendar-header {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            color: #93c5fd;
+            margin-bottom: 18px;
+            font-size: 17px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            font-size: 13px;
+        }
+
+        .day-name {
+            font-weight: 600;
+            color: #64748b;
+            padding-bottom: 6px;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        .calendar-day {
+            background: #1e293b;
+            padding: 10px 0;
+            border-radius: 10px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 500;
+            border: 1px solid #334155;
+        }
+
+        .calendar-day.empty {
+            background: transparent;
+            border: none;
+        }
+
+        .calendar-day.birthday {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            color: white;
+            font-weight: 700;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.5);
+            animation: pulseGlow 2s infinite;
+        }
+
+        @keyframes pulseGlow {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.08); }
+            100% { transform: scale(1); }
+        }
+
+        /* --- KOTAK QUOTES --- */
+        .quote-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed #3b82f6;
+            padding: 25px;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            font-family: 'Playfair Display', serif;
+            font-style: italic;
+            color: #93c5fd;
+            font-size: 16px;
+            line-height: 1.6;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        /* --- BUKU TAMU --- */
+        .guestbook-form {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .guestbook-form input, .guestbook-form textarea {
+            width: 100%;
+            padding: 14px 18px;
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            font-size: 14px;
+            outline: none;
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+        }
+
+        .guestbook-form input:focus, .guestbook-form textarea:focus {
+            border-color: #3b82f6;
+            background: #1e293b;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+
+        .wishes-list {
+            margin-top: 20px;
+            max-height: 260px;
+            overflow-y: auto;
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            padding-right: 5px;
+        }
+
+        .wish-card {
+            background: rgba(15, 23, 42, 0.6);
+            padding: 16px 18px;
+            border-radius: 14px;
+            border-left: 4px solid #3b82f6;
+            border: 1px solid var(--border-color);
+            border-left-width: 4px;
+            font-size: 14px;
+        }
+
+        .wish-card strong {
+            color: #93c5fd;
+            display: block;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .wish-card p {
+            margin-bottom: 0;
+            color: var(--text-muted);
+            font-size: 13.5px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- LAYAR AWAL: AMPLOP SURAT SPESIAL -->
+    <div id="envelopeScreen">
+        <div class="envelope" onclick="bukaSurat()">
+            <div class="stamp">7 OKT 🌌</div>
+            <div style="font-size: 36px; margin-bottom: 10px;">💌</div>
+            <h3>Untuk Teh Halimah</h3>
+            <p>Sentuh untuk membuka pesan spesial ✨</p>
+        </div>
+    </div>
+
+    <!-- KONTEN UTAMA WEBSITE -->
+    <div class="main-wrapper" id="mainContent">
+        
+        <!-- Kartu Utama -->
+        <div class="container">
+            <h1>🌌 Selamat Ulang Tahun<br>Teh Halimah 🌌</h1>
+            <div class="sender-badge">Spesial dari: Kaswati 🤍</div>
+            <p>Terima kasih sudah menjadi rekan kerja di area produksi yang luar biasa—selalu tangguh, hangat, dan membawa energi positif di tengah kesibukan pabrik. Semoga panjang umur, sehat selalu, makin sukses, dan apa pun impianmu tercapai setinggi bintang di langit! ✨</p>
+            
+            <button class="btn" onclick="confetti({particleCount: 120, spread: 80, origin: { y: 0.6 }, colors: ['#3b82f6', '#60a5fa', '#ffffff']})">Rayakan Hari Ini 🎉</button>
+        </div>
+
+        <!-- MINI GAME: CATCH THE STARS -->
+        <div class="container">
+            <h2>🎮 Mini Game: Tangkap Bintang!</h2>
+            <p style="font-size: 13.5px; margin-bottom: 15px;">Klik bintang sebanyak mungkin dalam 15 detik untuk menguji kecepatanmu! ⭐</p>
+            
+            <div class="game-box">
+                <div class="game-stats">
+                    <span id="scoreText">Skor: 0</span>
+                    <span id="timerText">Waktu: 15s</span>
+                </div>
+                <div class="game-arena" id="gameArena">
+                    <div id="gameStartMsg" style="position: absolute; width: 100%; top: 50%; transform: translateY(-50%); font-size: 14px; color: #93c5fd;">
+                        Tekan tombol di bawah untuk mulai bermain! 🚀
+                    </div>
+                </div>
+                <button class="btn" id="gameBtn" onclick="mulaiGame()" style="font-size: 13.5px; padding: 10px 24px;">Mulai Game 🌟</button>
+            </div>
+        </div>
+
+        <!-- SERTIFIKAT PENGHARGAAN PABRIK -->
+        <div class="container">
+            <h2>🏆 Piagam Penghargaan Spesial</h2>
+            <p style="font-size: 13.5px; margin-bottom: 15px;">Penghargaan resmi tanpa sidak dari Kaswati & Tim! 😉</p>
+            
+            <div class="cert-box">
+                <div class="cert-title">✨ Certificate of Awesomeness ✨</div>
+                <div class="cert-subtitle">Diberikan secara khusus kepada:</div>
+                <div style="font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: #93c5fd; margin-bottom: 10px;">Teh Halimah</div>
+                <div class="cert-badge-text">
+                    "Sebagai Rekan Kerja Paling Solid, Tahan Banting, dan Pemberi Semangat Terbaik di Area Produksi Pabrik!" 🏭👑
+                </div>
+                <button class="btn" onclick="klaimSertifikat()" style="font-size: 13.5px; padding: 10px 22px;">Klaim Penghargaan 🏆</button>
+            </div>
+        </div>
+
+        <!-- KUE & MAKE A WISH -->
+        <div class="container">
+            <h2>🎂 Tiup Lilin & Make a Wish</h2>
+            <p style="font-size: 13.5px; margin-bottom: 15px;">Sentuh lilin di kue bawah ini untuk meniupnya dan membuat permohonan!</p>
+            
+            <div class="cake-box">
+                <div class="cake-graphic" onclick="tiupLilin()" title="Sentuh untuk tiup lilin!">
+                    <span id="flame" class="flame">🕯️</span>🎂
+                </div>
+                <button class="btn" onclick="tiupLilin()" style="font-size: 13px; padding: 9px 20px;">Tiup Lilin ✨</button>
+                <div id="wishText" class="wish-result"></div>
+            </div>
+        </div>
+
+        <!-- KADO MISTERI -->
+        <div class="container" style="padding: 30px 35px;">
+            <h2>🎁 Kotak Kejutan Spesial</h2>
+            <p style="font-size: 13.5px; margin-bottom: 15px;">Ada pesan rahasia tersembunyi di dalam kado ini...</p>
+            
+            <div class="gift-box" onclick="bukaKado()">
+                <div style="font-size: 32px; margin-bottom: 5px;">🎁</div>
+                <strong style="color: #93c5fd; font-size: 15px;">Ketuk untuk Membuka Kado</strong>
+                <div id="giftContent" class="gift-content">
+                    "Semoga di usia yang baru ini, setiap shift kerja Teh Halimah selalu dilancarkan, badan selalu sehat, rezekinya seluas langit malam, dan semua impian indahnya terwujud satu per satu. Peluk hangat dari Kaswati! 🌌✨"
+                </div>
+            </div>
+        </div>
+
+        <!-- VIBE METER -->
+        <div class="container">
+            <h2>✨ The Halimah's Vibe Meter</h2>
+            <p style="font-size: 13.5px; margin-bottom: 15px;">Cek aura dan energi Teh Halimah khusus di hari spesial ini!</p>
+            
+            <div class="vibe-box">
+                <div id="vibeDisplay" class="vibe-display">
+                    "🌌 Aura Hari Ini: 100% Tangguh, Produktif, dan Mempesona Bagaikan Bintang Kejora 🌟"
+                </div>
+                <button class="btn" onclick="cekVibe()" style="font-size: 13.5px; padding: 10px 24px;">Acak Vibe Hari Ini 🔮</button>
+            </div>
+        </div>
+
+        <!-- Kalender Bulan Oktober -->
+        <div class="container">
+            <h2>📅 Tanggal Istimewa</h2>
+            <p style="font-size: 13.5px; margin-bottom: 15px;">Momen berharga hadirnya wanita hebat ke dunia ✨</p>
+            
+            <div class="calendar-box">
+                <div class="calendar-header">Oktober — Hari Lahir Teh Halimah 🤍</div>
+                <div class="calendar-grid">
+                    <div class="day-name">Min</div><div class="day-name">Sen</div><div class="day-name">Sel</div><div class="day-name">Rab</div><div class="day-name">Kam</div><div class="day-name">Jum</div><div class="day-name">Sab</div>
+                    <!-- Oktober 2026 dimulai hari Kamis (geser 3 kotak kosong) -->
+                    <div class="calendar-day empty"></div><div class="calendar-day empty"></div><div class="calendar-day empty"></div>
+                    <div class="calendar-day">1</div><div class="calendar-day">2</div><div class="calendar-day">3</div><div class="calendar-day">4</div>
+                    <div class="calendar-day">5</div><div class="calendar-day">6</div><div class="calendar-day birthday" title="Hari Lahir Teh Halimah!">7 🎂</div><div class="calendar-day">8</div><div class="calendar-day">9</div><div class="calendar-day">10</div><div class="calendar-day">11</div>
+                    <div class="calendar-day">12</div><div class="calendar-day">13</div><div class="calendar-day">14</div><div class="calendar-day">15</div><div class="calendar-day">16</div><div class="calendar-day">17</div><div class="calendar-day">18</div>
+                    <div class="calendar-day">19</div><div class="calendar-day">20</div><div class="calendar-day">21</div><div class="calendar-day">22</div><div class="calendar-day">23</div><div class="calendar-day">24</div><div class="calendar-day">25</div>
+                    <div class="calendar-day">26</div><div class="calendar-day">27</div><div class="calendar-day">28</div><div class="calendar-day">29</div><div class="calendar-day">30</div><div class="calendar-day">31</div>
+                    <div class="calendar-day empty"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Kotak Quotes Hidup -->
+        <div class="container">
+            <h2>💡 Percikan Inspirasi Hari Ini</h2>
+            <p style="font-size: 13.5px; margin-bottom: 15px;">Sentuh tombol di bawah untuk membaca kutipan penyemangat hidup.</p>
+            
+            <div id="quoteDisplay" class="quote-box">
+                "Setiap hari adalah lembaran baru untuk menulis hal-hal indah dalam hidup. Teruslah bersinar bagai bintang, Teh!" ✨
+            </div>
+
+            <button class="btn" onclick="const q = ['\"Setiap hari adalah lembaran baru untuk menulis hal-hal indah dalam hidup. Teruslah bersinar bagai bintang, Teh!\" ✨', '\"Kesuksesan sejati bukan tentang seberapa berat pekerjaannya, tapi seberapa ikhlas kita menjalaninya.\" 🌌', '\"Wanita hebat di area produksi bukan yang tidak pernah lelah, tapi yang tetap kuat dan tenang dalam setiap badai.\" 🌠', '\"Hal-hal baik datang kepada mereka yang sabar, dan hasil terbaik lahir dari ketulusan kerja keras.\" ⭐']; document.getElementById('quoteDisplay').innerText = q[Math.floor(Math.random() * q.length)];" style="font-size: 14px; padding: 10px 24px;">Ambil Quotes Baru 🌠</button>
+        </div>
+
+        <!-- FITUR BARU: KATA PENUTUP HANGAT TATA SURYA -->
+        <div class="container">
+            <div class="galaxy-closing">
+                <div class="orbit-icon">🌍 🪐 ✨</div>
+                <div class="closing-title">Pesan di Bawah Langit & Bintang</div>
+                <p class="closing-text">
+                    "Bumi berotasi pada porosnya, planet-planet mengitari jalurnya di luasnya tata surya... dan di antara jutaan manusia yang sibuk mengejar mimpi di bumi ini, kehadiran Teh Halimah memberikan orbit kehangatan tersendiri bagi kami di pabrik. Teruslah berputar dengan anggun, menginspirasi, dan bersinar paling terang di galaksi kita. Selamat ulang tahun sekali lagi, Teh! 🌌💫"
+                </p>
+            </div>
+        </div>
+
+        <!-- Buku Tamu & Doa Tim -->
+        <div class="container">
+            <h2>💌 Buku Tamu & Doa Tim</h2>
+            <p style="font-size: 13.5px; margin-bottom: 15px;">Kirimkan ucapan atau doa dari rekan-rekan pabrik di sini!</p>
+            
+            <div class="guestbook-form">
+                <input type="text" id="namaPengirim" placeholder="Nama Kamu...">
+                <textarea id="pesanPengirim" rows="3" placeholder="Tulis doa atau pesan tulus untuk Teh Halimah..."></textarea>
+                <button class="btn" onclick="tambahUcapanDb()" style="font-size: 14px; padding: 11px;">Kirim Ucapan 🚀</button>
+            </div>
+
+            <div id="daftarUcapan" class="wishes-list">
+                <div class="wish-card">Memuat ucapan...</div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // Fungsi Buka Amplop Surat
+        function bukaSurat() {
+            const screen = document.getElementById('envelopeScreen');
+            const main = document.getElementById('mainContent');
+            
+            screen.style.opacity = '0';
+            setTimeout(() => {
+                screen.style.display = 'none';
+                main.style.display = 'flex';
+                
+                confetti({
+                    particleCount: 100,
+                    spread: 70,
+                    origin: { y: 0.5 },
+                    colors: ['#3b82f6', '#60a5fa', '#ffffff', '#93c5fd']
+                });
+            }, 600);
+        }
+
+        // Fungsi Mini Game: Tangkap Bintang
+        let score = 0;
+        let timeLeft = 15;
+        let gameInterval = null;
+        let starSpawner = null;
+
+        function mulaiGame() {
+            const arena = document.getElementById('gameArena');
+            const startMsg = document.getElementById('gameStartMsg');
+            const btn = document.getElementById('gameBtn');
+            
+            arena.innerHTML = '';
+            score = 0;
+            timeLeft = 15;
+            document.getElementById('scoreText').innerText = "Skor: " + score;
+            document.getElementById('timerText').innerText = "Waktu: " + timeLeft + "s";
+            btn.disabled = true;
+            btn.style.opacity = '0.6';
+
+            // Timer mundur
+            gameInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timerText').innerText = "Waktu: " + timeLeft + "s";
+                if (timeLeft <= 0) {
+                    clearInterval(gameInterval);
+                    clearInterval(starSpawner);
+                    arena.innerHTML = `<div style="position: absolute; width: 100%; top: 50%; transform: translateY(-50%); font-size: 15px; color: #93c5fd; font-weight: 600;">Waktu Habis! 🎉 Skor Kamu: ${score} Bintang ✨</div>`;
+                    btn.disabled = false;
+                    btn.style.opacity = '1';
+                    btn.innerText = "Main Lagi 🌟";
+                    
+                    if(score >= 10) {
+                        confetti({ particleCount: 100, spread: 70, origin: { y: 0.8 } });
+                    }
+                }
+            }, 1000);
+
+            // Pemuncul Bintang Acak
+            starSpawner = setInterval(() => {
+                if (timeLeft > 0) {
+                    munculkanBintang();
+                }
+            }, 600);
+        }
+
+        function munculkanBintang() {
+            const arena = document.getElementById('gameArena');
+            const star = document.createElement('div');
+            star.className = 'target-item';
+            star.innerHTML = '⭐';
+            
+            const maxX = arena.clientWidth - 40;
+            const maxY = arena.clientHeight - 40;
+            const randomX = Math.floor(Math.random() * maxX);
+            const randomY = Math.floor(Math.random() * maxY);
+            
+            star.style.left = randomX + 'px';
+            star.style.top = randomY + 'px';
+            
+            star.onclick = function() {
+                score++;
+                document.getElementById('scoreText').innerText = "Skor: " + score;
+                star.remove();
+            };
+
+            arena.appendChild(star);
+
+            // Hilang sendiri dalam 1 detik kalau tidak diklik
+            setTimeout(() => {
+                if (star.parentElement) {
+                    star.remove();
+                }
+            }, 900);
+        }
+
+        // Fungsi Klaim Sertifikat
+        function klaimSertifikat() {
+            confetti({
+                particleCount: 150,
+                spread: 100,
+                origin: { y: 0.6 },
+                colors: ['#3b82f6', '#60a5fa', '#ffffff', '#1d4ed8']
+            });
+            alert("🏆 Selamat! Sertifikat Rekan Pabrik Paling Solid berhasil diklaim untuk Teh Halimah!");
+        }
+
+        // Fungsi Tiup Lilin & Make a Wish
+        let sudahTiup = false;
+        function tiupLilin() {
+            const flame = document.getElementById('flame');
+            const wishText = document.getElementById('wishText');
+            
+            if (!sudahTiup) {
+                flame.classList.add('extinguished');
+                wishText.innerHTML = "🎉 Yeay! Lilin berhasil ditiup. Semoga semua doa dan harapan terbaik Teh Halimah terkabul setinggi bintang! ✨";
+                
+                confetti({
+                    particleCount: 90,
+                    spread: 80,
+                    origin: { y: 0.7 },
+                    colors: ['#60a5fa', '#ffffff', '#3b82f6', '#93c5fd']
+                });
+                sudahTiup = true;
+            } else {
+                flame.classList.remove('extinguished');
+                wishText.innerHTML = "🕯️ Lilin dinyalakan kembali! Ayo make a wish lagi ya. ✨";
+                sudahTiup = false;
+            }
+        }
+
+        // Fungsi Buka Kado Misteri
+        function bukaKado() {
+            const content = document.getElementById('giftContent');
+            if (content.style.display === 'block') {
+                content.style.display = 'none';
+            } else {
+                content.style.display = 'block';
+                confetti({
+                    particleCount: 50,
+                    spread: 60,
+                    origin: { y: 0.8 },
+                    colors: ['#3b82f6', '#ffffff', '#60a5fa']
+                });
+            }
+        }
+
+        // Fungsi Vibe Meter Acak
+        const daftarVibe = [
+            "\"🌌 Aura Hari Ini: 100% Tangguh, Produktif, dan Mempesona Bagaikan Bintang Kejora 🌟\"",
+            "\"👑 Status Aura: Rekan kerja paling solid dan tahan banting di area produksi! ✨\"",
+            "\"⚡ Level Energi: Full semangat, anti loyo, siap cetak target hari ini! 🚀\"",
+            "\"🌟 Rating Hari Ini: 10/10 Bintang! Pesona dan senyuman Teh Halimah juara banget 🌠\""
+        ];
+        function cekVibe() {
+            const randomVibe = Math.floor(Math.random() * daftarVibe.length);
+            document.getElementById('vibeDisplay').innerText = daftarVibe[randomVibe];
+            confetti({
+                particleCount: 30,
+                spread: 40,
+                origin: { y: 0.8 },
+                colors: ['#3b82f6', '#93c5fd']
+            });
+        }
+
+        // Script Efek Bintang Berkelap-kelip di Background
+        function createStars() {
+            const starCount = 30;
+            for (let i = 0; i < starCount; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                const size = Math.random() * 3 + 1;
+                star.style.width = `${size}px`;
+                star.style.height = `${size}px`;
+                star.style.left = `${Math.random() * 100}vw`;
+                star.style.top = `${Math.random() * 100}vh`;
+                
+                const duration = Math.random() * 3 + 2;
+                const delay = Math.random() * 5;
+                star.style.animationDuration = `${duration}s`;
+                star.style.animationDelay = `${delay}s`;
+                
+                document.body.appendChild(star);
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', createStars);
+    </script>
+</body>
+</html>
